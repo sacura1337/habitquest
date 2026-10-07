@@ -407,17 +407,26 @@ def complete_habit(
 )
 def uncomplete_habit(
     habit_id: int,
-    target_date: dt_date = Query(..., alias="date", description="Дата отметки, ГГГГ-ММ-ДД"),
+    target_date: dt_date | None = Query(
+        None,
+        alias="date",
+        description="Дата отметки, ГГГГ-ММ-ДД. Если параметр не указан — сегодня",
+    ),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> Response:
-    """Отменить отметку выполнения за указанную дату и списать её XP."""
+    """Отменить отметку выполнения за указанную дату (по умолчанию — за сегодня).
+
+    Параметр ``date`` необязателен, как и у отметки выполнения: вызов без
+    параметра отменяет отметку за текущую дату.
+    """
     habit = _get_owned_habit(db, habit_id, current_user)
+    moment = target_date or now().date()
 
     completion = db.scalar(
         select(HabitCompletion).where(
             HabitCompletion.habit_id == habit.id,
-            HabitCompletion.completion_date == target_date,
+            HabitCompletion.completion_date == moment,
         )
     )
     if completion is None:
@@ -439,25 +448,39 @@ def uncomplete_habit(
 )
 def list_habit_completions(
     habit_id: int,
+    date_from: dt_date | None = Query(
+        None, description="Начало периода, ГГГГ-ММ-ДД (включительно)"
+    ),
+    date_to: dt_date | None = Query(
+        None, description="Конец периода, ГГГГ-ММ-ДД (включительно)"
+    ),
     limit: int = Query(50, ge=1, le=200, description="Размер страницы"),
     offset: int = Query(0, ge=0, description="Смещение"),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> CompletionListOut:
-    """История выполнения одной привычки, новые отметки — первыми."""
+    """История выполнения одной привычки, новые отметки — первыми.
+
+    Поддерживается необязательный фильтр по периоду ``date_from`` / ``date_to``;
+    ``total`` всегда отражает количество отметок с учётом фильтра.
+    """
     habit = _get_owned_habit(db, habit_id, current_user)
+
+    filters = [HabitCompletion.habit_id == habit.id]
+    if date_from is not None:
+        filters.append(HabitCompletion.completion_date >= date_from)
+    if date_to is not None:
+        filters.append(HabitCompletion.completion_date <= date_to)
 
     total = int(
         db.scalar(
-            select(func.count())
-            .select_from(HabitCompletion)
-            .where(HabitCompletion.habit_id == habit.id)
+            select(func.count()).select_from(HabitCompletion).where(*filters)
         )
         or 0
     )
     rows = db.scalars(
         select(HabitCompletion)
-        .where(HabitCompletion.habit_id == habit.id)
+        .where(*filters)
         .order_by(HabitCompletion.completed_at.desc(), HabitCompletion.id.desc())
         .limit(limit)
         .offset(offset)

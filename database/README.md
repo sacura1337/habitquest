@@ -237,7 +237,8 @@ python -m alembic revision --autogenerate -m "описание"   # новая �
 3. В файле `backend/.env` замените строку подключения:
 
    ```env
-   DATABASE_URL=postgresql+psycopg://habitquest:habitquest@localhost:5432/habitquest
+   # Адрес сервера базы данных определим позже — подумаем.
+   DATABASE_URL=postgresql+psycopg://habitquest:habitquest@<адрес>:5432/habitquest
    ```
 
 4. Примените миграции и загрузите данные:
