@@ -1,0 +1,43 @@
+# Blueprint для публикации бэкенда HabitQuest на Render (https://render.com).
+#
+# Автоматический вариант развёртывания: Dashboard → New → Blueprint →
+# выбрать репозиторий habitquest. Render сам создаст веб-сервис и базу данных.
+#
+# Если Blueprint не сработает (меняется формат спецификации у хостинга),
+# используйте ручные шаги из docs/DEPLOY.md — они надёжнее и всегда актуальны.
+
+services:
+  - type: web
+    name: habitquest-api
+    runtime: python
+    plan: free
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    # Миграции и тестовые данные применяются при каждом запуске:
+    # оба скрипта идемпотентны, поэтому повторный запуск ничего не дублирует.
+    startCommand: alembic upgrade head && python -m app.seed && uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.10
+      # Render сам сгенерирует длинный случайный ключ подписи JWT
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ALGORITHM
+        value: HS256
+      - key: ACCESS_TOKEN_EXPIRE_MINUTES
+        value: "10080"
+      # Строка подключения подставляется из созданной базы данных
+      - key: DATABASE_URL
+        fromDatabase:
+          name: habitquest-db
+          property: connectionString
+      # Адрес опубликованного фронтенда — укажите вручную при развёртывании
+      - key: CORS_ORIGINS
+        sync: false
+
+databases:
+  - name: habitquest-db
+    plan: free
+    databaseName: habitquest
+    user: habitquest
