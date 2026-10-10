@@ -1,0 +1,68 @@
+name: Публикация фронтенда на GitHub Pages
+
+# Сборка запускается при каждом изменении во фронтенде в ветке main.
+# Собранные файлы выкладываются на GitHub Pages — сайт обновляется автоматически.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/deploy-frontend.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Одновременно выполняется только одна публикация.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Сборка
+    runs-on: ubuntu-latest
+    steps:
+      - name: Получение исходников
+        uses: actions/checkout@v4
+
+      - name: Настройка Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Установка зависимостей
+        working-directory: frontend
+        run: npm ci
+
+      - name: Сборка проекта
+        working-directory: frontend
+        run: npm run build
+        env:
+          # Сайт публикуется в подкаталоге /habitquest/
+          VITE_BASE: /habitquest/
+
+      - name: Подготовка GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Загрузка собранных файлов
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: frontend/dist
+
+  deploy:
+    name: Публикация
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Выкладка на GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
