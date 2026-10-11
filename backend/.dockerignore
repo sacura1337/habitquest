@@ -1,0 +1,31 @@
+# Что не попадает в образ при сборке.
+
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# Локальная конфигурация и секреты
+.env
+.env.local
+
+# Локальные базы данных
+*.db
+*.sqlite
+*.sqlite3
+
+# Загруженные пользователями файлы
+uploads/*
+!uploads/.gitkeep
+
+# Кэши инструментов
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Служебные файлы систем контроля версий и редакторов
+.git/
+.gitignore
+.vscode/
+.idea/
