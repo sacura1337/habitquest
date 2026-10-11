@@ -65,12 +65,24 @@ git-адрес. Поскольку бэкенд лежит в отдельной
 
 ```powershell
 cd C:\Users\Lytik\Desktop\УП.08
-git remote add amvera https://git.amvera.ru/sacura1337/habitquest-api
+git remote add amvera https://git.msk1.amvera.ru/sacura1337/habitquest-api
 git subtree push --prefix backend amvera master
 ```
 
-> Точный адрес репозитория и имя ветки (`master` или `main`) Amvera показывает
-> в карточке проекта — сверьтесь с ним.
+Если `git subtree` не работает (он запускает shell-скрипт и в ограниченном
+окружении падает), ветку можно собрать средствами самого git:
+
+```powershell
+# дерево папки backend превращаем в отдельный коммит
+$tree   = git rev-parse HEAD:backend
+$commit = git commit-tree $tree -m "Публикация серверной части HabitQuest"
+# имя ветки на стороне Amvera указываем полностью
+git push amvera "${commit}:refs/heads/master"
+```
+
+> Имя ветки Amvera показывает в карточке проекта — обычно это `master`.
+> После отправки в логе Amvera появится строка `Detected changes in master branch`,
+> и сборка начнётся автоматически.
 
 ### Шаг 4. Переменные окружения
 
@@ -103,26 +115,45 @@ python -c "import secrets; print(secrets.token_urlsafe(48))"
 DATABASE_URL=postgresql://пользователь:пароль@хост:5432/habitquest
 ```
 
-### Шаг 5. Проверка
+### Шаг 5. Доменное имя
 
-Amvera выдаст адрес вида `https://habitquest-api-sacura1337.amvera.io`.
+При создании проекта Amvera сразу заводит домен со **внутренним** типом
+подключения. Из интернета он недоступен — соединение отбрасывается ещё до
+установки шифрования, поэтому ни браузер, ни curl приложение не увидят.
+
+Чтобы сайт открывался снаружи, перейдите во вкладку **«Домены»** и нажмите
+**«Создать доменное имя»**:
+
+| Поле | Значение |
+| --- | --- |
+| Тип подключения | `HTTPS` |
+| Тип домена | `Бесплатный домен Амвера` |
+| Доменное имя | предложенное Amvera, например `habitquest-api-sacura1337.msk1.amvera.tech` |
+| Дополнительные настройки → Порты | **оставить пустыми** — приложение слушает один порт |
+
+Сертификат Amvera выпускает автоматически, домен начинает отвечать через
+одну-две минуты.
+
+### Шаг 6. Проверка
+
+Рабочий адрес проекта: **https://habitquest-api-sacura1337.msk1.amvera.tech**
 
 ```powershell
 # 1. Сервис отвечает
-curl.exe https://habitquest-api-sacura1337.amvera.io/
+curl.exe https://habitquest-api-sacura1337.msk1.amvera.tech/
 
 # 2. Документация API открывается
-start https://habitquest-api-sacura1337.amvera.io/docs
+start https://habitquest-api-sacura1337.msk1.amvera.tech/docs
 
-# 3. Вход тестовым аккаунтом (замените адрес на свой)
-curl.exe -X POST https://habitquest-api-sacura1337.amvera.io/api/auth/login ^
+# 3. Вход тестовым аккаунтом
+curl.exe -X POST https://habitquest-api-sacura1337.msk1.amvera.tech/api/auth/login ^
   -H "Content-Type: application/json" ^
   -d "{\"email\":\"demo@habitquest.ru\",\"password\":\"demo1234\"}"
 ```
 
 Третий запрос должен вернуть `access_token`, `token_type` и объект `user`.
 
-### Шаг 6. Связь с фронтендом
+### Шаг 7. Связь с фронтендом
 
 Фронтенд уже опубликован: **https://sacura1337.github.io/habitquest/**
 
