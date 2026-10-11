@@ -67,9 +67,25 @@ class Settings(BaseSettings):
         return path.resolve()
 
     @property
+    def database_url(self) -> str:
+        """Строка подключения, приведённая к драйверу psycopg 3.
+
+        Хостинги (Render, Railway, Neon, Supabase) выдают адрес базы в виде
+        ``postgresql://...``. По такой схеме SQLAlchemy ищет драйвер psycopg2,
+        которого нет в зависимостях проекта — установлен psycopg третьей версии.
+        Поэтому схема приводится к явному виду ``postgresql+psycopg://``.
+        """
+        url = self.DATABASE_URL.strip()
+        if url.startswith("postgres://"):
+            url = "postgresql://" + url[len("postgres://") :]
+        if url.startswith("postgresql://"):
+            url = "postgresql+psycopg://" + url[len("postgresql://") :]
+        return url
+
+    @property
     def is_sqlite(self) -> bool:
         """``True``, если используется SQLite."""
-        return self.DATABASE_URL.startswith("sqlite")
+        return self.database_url.startswith("sqlite")
 
 
 @lru_cache

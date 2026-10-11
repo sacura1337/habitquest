@@ -80,11 +80,11 @@
 
 | Переменная | Значение | Обязательна |
 | --- | --- | --- |
-| `DATABASE_URL` | Internal Database URL из шага 1 | да |
+| `DATABASE_URL` | Internal Database URL из шага 1. Вставляйте как есть — приложение само подставит нужный драйвер | да |
 | `SECRET_KEY` | длинная случайная строка, минимум 32 символа | да |
 | `ALGORITHM` | `HS256` | да |
 | `ACCESS_TOKEN_EXPIRE_MINUTES` | `10080` (7 суток) | да |
-| `CORS_ORIGINS` | адреса фронтенда через запятую | да |
+| `CORS_ORIGINS` | `https://sacura1337.github.io,http://localhost:5173` | да |
 | `UPLOAD_DIR` | `uploads` | нет |
 | `PYTHON_VERSION` | `3.12.10` | нет |
 
@@ -118,15 +118,21 @@ curl.exe -X POST https://habitquest-api.onrender.com/api/auth/login ^
 
 ### Шаг 4. Связь с фронтендом
 
-1. Скопируйте адрес сервиса и пропишите его в переменной `VITE_API_URL`
-   на хостинге фронтенда.
-2. Вернитесь в настройки бэкенда и добавьте адрес фронтенда в `CORS_ORIGINS`:
+Фронтенд уже опубликован: **https://sacura1337.github.io/habitquest/**
+
+1. В настройках бэкенда на Render добавьте адрес фронтенда в `CORS_ORIGINS`:
 
    ```text
-   https://habitquest.vercel.app,http://localhost:5173
+   https://sacura1337.github.io,http://localhost:5173
    ```
 
-3. Перезапустите сервис: **Manual Deploy → Restart**.
+   Без этого браузер заблокирует запросы с сайта к API.
+
+2. Перезапустите сервис: **Manual Deploy → Restart**.
+
+3. Подключение фронтенда к API — задача следующего этапа. Адрес бэкенда
+   передаётся в сборку переменной `VITE_API_URL` через переменные репозитория
+   GitHub: **Settings → Secrets and variables → Actions → Variables**.
 
 ---
 
