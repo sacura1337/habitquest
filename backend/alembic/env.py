@@ -23,7 +23,7 @@ from app.core.config import settings  # noqa: E402
 from app.core.database import Base  # noqa: E402
 
 config = context.config
-config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
+config.set_main_option("sqlalchemy.url", settings.database_url)
 
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
@@ -34,7 +34,7 @@ target_metadata = Base.metadata
 def run_migrations_offline() -> None:
     """Запуск миграций в режиме «офлайн» (генерация SQL без подключения)."""
     context.configure(
-        url=settings.DATABASE_URL,
+        url=settings.database_url,
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
