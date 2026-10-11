@@ -1,0 +1,23 @@
+# Конфигурация публикации серверной части HabitQuest в Amvera Cloud.
+#
+# Этот файл читается, когда проект подключён к Amvera как приложение Python.
+# Окружение python означает, что сборка и запуск идут в образе python:3.12,
+# а зависимости ставятся из requirements.txt.
+
+meta:
+  environment: python
+  toolchain:
+    name: pip
+    version: "3.12"
+
+build:
+  requirementsPath: requirements.txt
+
+run:
+  # start.py применяет миграции, загружает тестовые данные и запускает uvicorn.
+  scriptName: start.py
+  # Порт должен совпадать с портом в start.py (переменная PORT).
+  containerPort: 5000
+  # Постоянное хранилище: файл базы SQLite и загруженные аватары
+  # переживают пересборку и перезапуск приложения.
+  persistenceMount: /data
