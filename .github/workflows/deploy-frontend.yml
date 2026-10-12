@@ -46,6 +46,11 @@ jobs:
         env:
           # Сайт публикуется в подкаталоге /habitquest/
           VITE_BASE: /habitquest/
+          # Адрес REST API, к которому обращается опубликованный фронтенд.
+          # При переезде бэкенда на другой хостинг измените это значение.
+          # Значение можно задать и переменной репозитория VITE_API_URL:
+          # Settings → Secrets and variables → Actions → Variables.
+          VITE_API_URL: ${{ vars.VITE_API_URL || 'https://habitquest-api-sacura1337.msk1.amvera.tech' }}
 
       - name: Подготовка GitHub Pages
         uses: actions/configure-pages@v5

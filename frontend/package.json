@@ -2,7 +2,7 @@
   "name": "habitquest",
   "version": "1.0.0",
   "private": true,
-  "description": "HabitQuest — адаптивный интерфейс трекера привычек с геймификацией (УП.08, задание 3)",
+  "description": "HabitQuest — трекер привычек с геймификацией: React + Vite, задания 3–7 практики УП.08",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -12,7 +12,8 @@
   "dependencies": {
     "lucide-react": "^0.468.0",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.28.0"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.3.4",
