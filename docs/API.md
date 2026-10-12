@@ -1,6 +1,7 @@
 # HabitQuest — описание REST API
 
-Базовый адрес: `/api`. Адрес сервера — `подумаем`.
+Базовый адрес: `/api`. Адрес сервера — `https://habitquest-api-sacura1337.msk1.amvera.tech`.
+Локальный сервер разработки — `http://127.0.0.1:8000`.
 Формат данных: JSON, кодировка UTF-8.
 Авторизация: заголовок `Authorization: Bearer <access_token>` для всех закрытых методов.
 
