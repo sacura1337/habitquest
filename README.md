@@ -25,6 +25,7 @@
 | Техническое задание | [docs/ТЗ_HabitQuest.docx](docs/ТЗ_HabitQuest.docx) |
 | Инструкция по публикации | [docs/DEPLOY.md](docs/DEPLOY.md) |
 | Описание REST API | [docs/API.md](docs/API.md) |
+| Презентация проекта | [docs/Презентация_HabitQuest.pptx](docs/Презентация_HabitQuest.pptx) |
 
 ## О проекте
 
