@@ -237,7 +237,7 @@ python -m alembic revision --autogenerate -m "описание"   # новая �
 3. В файле `backend/.env` замените строку подключения:
 
    ```env
-   # Адрес сервера базы данных определим позже — подумаем.
+   # Строка подключения к базе данных на хостинге (Amvera, Render, Neon).
    DATABASE_URL=postgresql+psycopg://habitquest:habitquest@<адрес>:5432/habitquest
    ```
 
