@@ -47,3 +47,6 @@ Desktop.ini
 _tools/
 .npm-cache/
 .tmp/
+
+# Собранный фронтенд, встроенный в серверную часть для публикации
+backend/static/

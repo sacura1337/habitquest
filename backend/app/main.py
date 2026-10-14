@@ -9,15 +9,15 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-from fastapi import FastAPI, Request, status
+from fastapi import FastAPI, HTTPException, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.api import achievements, auth, categories, habits, statistics, users
-from app.core.config import settings
+from app.core.config import BASE_DIR, settings
 
 logger = logging.getLogger("habitquest")
 
@@ -178,15 +178,46 @@ def create_app() -> FastAPI:
             content={"detail": "Внутренняя ошибка сервера"},
         )
 
-    @application.get("/", include_in_schema=False)
-    async def root() -> dict[str, str]:
-        """Короткая справка о сервисе."""
-        return {
-            "name": settings.APP_NAME,
-            "version": settings.APP_VERSION,
-            "docs": "/docs",
-            "api": "/api",
-        }
+    # --- Отдача собранного фронтенда -----------------------------------------
+    # Если рядом с серверной частью лежит папка static с результатом сборки
+    # клиентской части, приложение отдаёт и сайт, и API по одному адресу.
+    # Это позволяет развернуть весь проект одним контейнером.
+    static_dir = BASE_DIR / "static"
+    if static_dir.is_dir():
+        assets_dir = static_dir / "assets"
+        if assets_dir.is_dir():
+            application.mount("/assets", StaticFiles(directory=str(assets_dir)), name="assets")
+
+        @application.get("/{full_path:path}", include_in_schema=False)
+        async def serve_frontend(full_path: str) -> FileResponse:
+            """Отдать файл сборки, а для клиентских маршрутов — index.html."""
+            if full_path.startswith(("api/", "uploads/")) or full_path in {
+                "docs",
+                "redoc",
+                "openapi.json",
+            }:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="Запрашиваемый ресурс не найден",
+                )
+
+            candidate = (static_dir / full_path).resolve()
+            if full_path and candidate.is_file() and static_dir in candidate.parents:
+                return FileResponse(candidate)
+            # Неизвестный путь — отдаём точку входа: маршрутами управляет клиент.
+            return FileResponse(static_dir / "index.html")
+
+    else:
+
+        @application.get("/", include_in_schema=False)
+        async def root() -> dict[str, str]:
+            """Короткая справка о сервисе (когда фронтенд не подключён)."""
+            return {
+                "name": settings.APP_NAME,
+                "version": settings.APP_VERSION,
+                "docs": "/docs",
+                "api": "/api",
+            }
 
     return application
 
